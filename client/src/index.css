@@ -1,0 +1,449 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap");
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  /* Kahoot! Vibrant Colors */
+  --primary: #FF6B35;
+  --primary-foreground: #FFFFFF;
+  --secondary: #004E89;
+  --secondary-foreground: #FFFFFF;
+  --accent-purple: #9D4EDD;
+  --accent-pink: #FF006E;
+  --accent-cyan: #00D9FF;
+  --accent-yellow: #FFD60A;
+  --accent-green: #06D6A0;
+  
+  --sidebar-primary: #FF6B35;
+  --sidebar-primary-foreground: #FFFFFF;
+  --chart-1: #FF6B35;
+  --chart-2: #004E89;
+  --chart-3: #9D4EDD;
+  --chart-4: #FF006E;
+  --chart-5: #00D9FF;
+  --radius: 1rem;
+  --background: #FFFFFF;
+  --foreground: #1A1A1A;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1A;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A1A;
+  --secondary: #004E89;
+  --secondary-foreground: #FFFFFF;
+  --muted: #F0F1F3;
+  --muted-foreground: #666666;
+  --accent: #FFD60A;
+  --accent-foreground: #1A1A1A;
+  --destructive: #FF006E;
+  --destructive-foreground: #FFFFFF;
+  --border: #E0E0E0;
+  --input: #F8F9FA;
+  --ring: #FF6B35;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1A1A1A;
+  --sidebar-accent: #F0F1F3;
+  --sidebar-accent-foreground: #FF6B35;
+  --sidebar-border: #E0E0E0;
+  --sidebar-ring: #FF6B35;
+}
+
+.dark {
+  --primary: #FF6B35;
+  --primary-foreground: #FFFFFF;
+  --sidebar-primary: #FF6B35;
+  --sidebar-primary-foreground: #FFFFFF;
+  --background: #0F0F0F;
+  --foreground: #FFFFFF;
+  --card: #1A1A1A;
+  --card-foreground: #FFFFFF;
+  --popover: #1A1A1A;
+  --popover-foreground: #FFFFFF;
+  --secondary: #1A7FDB;
+  --secondary-foreground: #FFFFFF;
+  --muted: #333333;
+  --muted-foreground: #AAAAAA;
+  --accent: #FFD60A;
+  --accent-foreground: #1A1A1A;
+  --destructive: #FF006E;
+  --destructive-foreground: #FFFFFF;
+  --border: #333333;
+  --input: #2A2A2A;
+  --ring: #FF6B35;
+  --chart-1: #FF6B35;
+  --chart-2: #1A7FDB;
+  --chart-3: #9D4EDD;
+  --chart-4: #FF006E;
+  --chart-5: #00D9FF;
+  --sidebar: #1A1A1A;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-accent: #333333;
+  --sidebar-accent-foreground: #FF6B35;
+  --sidebar-border: #333333;
+  --sidebar-ring: #FF6B35;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Fredoka", sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 100%);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      max-width: 1280px;
+    }
+  }
+
+  /* Kahoot! Style Cards */
+  .card-elevated {
+    @apply bg-card text-card-foreground rounded-3xl shadow-xl border-2 border-gray-100 transition-all duration-300;
+    
+    &:hover {
+      @apply shadow-2xl -translate-y-1;
+    }
+  }
+
+  .card-subtle {
+    @apply bg-gradient-to-br from-gray-50 to-gray-100 text-card-foreground rounded-2xl border-2 border-gray-200 transition-all duration-300;
+    
+    &:hover {
+      @apply border-primary from-orange-50 to-orange-100;
+    }
+  }
+
+  .card-gradient {
+    @apply rounded-3xl bg-gradient-to-br border-2 shadow-lg;
+  }
+
+  /* Kahoot! Style Buttons */
+  .button-primary {
+    @apply px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full font-bold text-lg transition-all duration-300 shadow-lg;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+    
+    &:hover:not(:disabled) {
+      @apply -translate-y-1 shadow-2xl;
+      transform: translateY(-4px);
+    }
+
+    &:active:not(:disabled) {
+      @apply translate-y-0;
+    }
+
+    &:disabled {
+      @apply opacity-50 cursor-not-allowed;
+    }
+  }
+
+  .button-secondary {
+    @apply px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full font-bold text-lg transition-all duration-300 shadow-lg;
+    box-shadow: 0 4px 15px rgba(0, 78, 137, 0.4);
+    
+    &:hover:not(:disabled) {
+      @apply -translate-y-1 shadow-2xl;
+      transform: translateY(-4px);
+    }
+
+    &:active:not(:disabled) {
+      @apply translate-y-0;
+    }
+
+    &:disabled {
+      @apply opacity-50 cursor-not-allowed;
+    }
+  }
+
+  .button-accent {
+    @apply px-8 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-full font-bold text-lg transition-all duration-300 shadow-lg;
+    box-shadow: 0 4px 15px rgba(157, 78, 221, 0.4);
+    
+    &:hover:not(:disabled) {
+      @apply -translate-y-1 shadow-2xl;
+      transform: translateY(-4px);
+    }
+
+    &:active:not(:disabled) {
+      @apply translate-y-0;
+    }
+  }
+
+  /* Input Fields */
+  .input-elegant {
+    @apply w-full px-4 py-3 bg-input border-2 border-gray-200 rounded-2xl text-foreground placeholder-muted-foreground focus:outline-none focus:ring-0 focus:border-primary transition-all duration-300 font-medium;
+  }
+
+  /* Badges */
+  .badge-success {
+    @apply inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 font-bold text-sm;
+  }
+
+  .badge-warning {
+    @apply inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-700 font-bold text-sm;
+  }
+
+  .badge-danger {
+    @apply inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-red-100 to-pink-100 text-red-700 font-bold text-sm;
+  }
+
+  .badge-info {
+    @apply inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 font-bold text-sm;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent;
+  }
+}
+
+/* Kahoot! Animations */
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(255, 107, 53, 0);
+  }
+}
+
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(720deg);
+  }
+}
+
+@keyframes scale-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes wiggle {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.15);
+  }
+  50% {
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@layer utilities {
+  .animate-bounce-gentle {
+    animation: bounce-gentle 2s infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s infinite;
+  }
+
+  .animate-slide-in-up {
+    animation: slide-in-up 0.5s ease-out;
+  }
+
+  .animate-slide-in-down {
+    animation: slide-in-down 0.5s ease-out;
+  }
+
+  .animate-confetti {
+    animation: confetti-fall 3s ease-in forwards;
+  }
+
+  .animate-scale-pop {
+    animation: scale-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .animate-wiggle {
+    animation: wiggle 0.5s ease-in-out;
+  }
+
+  .animate-heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+  }
+
+  .shadow-glow-primary {
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+  }
+
+  .shadow-glow-secondary {
+    box-shadow: 0 0 20px rgba(0, 78, 137, 0.4);
+  }
+
+  .shadow-glow-purple {
+    box-shadow: 0 0 20px rgba(157, 78, 221, 0.4);
+  }
+
+  .shadow-glow-pink {
+    box-shadow: 0 0 20px rgba(255, 0, 110, 0.4);
+  }
+}
