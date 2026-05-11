@@ -18,7 +18,7 @@ export default function Home() {
         <div className="text-center pt-12 md:pt-20 px-4">
           <div className="flex flex-col items-center justify-center gap-4 mb-6">
             <div className="animate-scale-pop">
-              <img src="/manus-storage/LOGO_e3812815.png" alt="Jdesign Studio Logo" className="w-24 h-24 md:w-32 md:h-32" />
+              <img src="jdesign.png" alt="Jdesign Studio Logo" className="w-24 h-24 md:w-32 md:h-32" />
             </div>
             <div>
               <h1 className="text-5xl md:text-6xl font-bold text-gradient">Bidding Game</h1>

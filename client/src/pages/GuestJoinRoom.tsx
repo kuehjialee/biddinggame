@@ -74,7 +74,7 @@ export default function GuestJoinRoom() {
       <div className="relative z-10 w-full max-w-md">
         <div className="card-elevated p-8 md:p-12">
           <div className="text-center mb-8">
-            <img src="/manus-storage/LOGO_e3812815.png" alt="Jdesign Studio Logo" className="w-16 h-16 mx-auto mb-4 animate-scale-pop" />
+            <img src="jdesign.png" alt="Jdesign Studio Logo" className="w-16 h-16 mx-auto mb-4 animate-scale-pop" />
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
               Join Room
             </h1>

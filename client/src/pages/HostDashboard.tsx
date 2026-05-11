@@ -224,7 +224,7 @@ export default function HostDashboard() {
         {/* Header */}
         <div className="mb-8 text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start gap-4 mb-4">
-            <img src="/manus-storage/LOGO_e3812815.png" alt="Jdesign Studio Logo" className="w-14 h-14" />
+            <img src="jdesign.png" alt="Jdesign Studio Logo" className="w-14 h-14" />
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900">Host Control</h1>
           </div>
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">

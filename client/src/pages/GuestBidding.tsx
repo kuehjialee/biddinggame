@@ -174,7 +174,7 @@ export default function GuestBidding() {
         {/* Header */}
         <div className="mb-8 text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start gap-4 mb-4">
-            <img src="/manus-storage/LOGO_e3812815.png" alt="Jdesign Studio Logo" className="w-12 h-12" />
+            <img src="jdesign.png" alt="Jdesign Studio Logo" className="w-12 h-12" />
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900">Bidding Arena</h1>
           </div>
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
