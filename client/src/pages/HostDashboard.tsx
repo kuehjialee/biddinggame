@@ -2,7 +2,7 @@ import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useState, useEffect } from "react";
-import { Loader2, Plus, Play, Square, ArrowLeft, Users } from "lucide-react";
+import { Loader2, Plus, Play, Square, ArrowLeft, Users, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 export default function HostDashboard() {
@@ -15,6 +15,8 @@ export default function HostDashboard() {
   const [startingPrice, setStartingPrice] = useState("");
   const [timerDuration, setTimerDuration] = useState<"10" | "30" | "60">("30");
   const [activeRound, setActiveRound] = useState(false);
+  const [currentItemId, setCurrentItemId] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
   const [bids, setBids] = useState<Array<{ participantName: string; bidAmount: string }>>([]);
 
   // Fetch room data
@@ -63,15 +65,21 @@ export default function HostDashboard() {
 
   // Start round mutation
   const startRoundMutation = trpc.round.start.useMutation({
-    onSuccess: (result) => {
+    onSuccess: (result, variables) => {
+      const startedItem = itemsQuery.data?.find((item) => item.id === variables.itemId);
       toast.success("🎬 Round started!");
       setActiveRound(true);
+      setCurrentItemId(variables.itemId);
+      setTimeLeft(Math.max(0, Math.ceil((result.endTime - Date.now()) / 1000)));
+      roomQuery.refetch();
+      itemsQuery.refetch();
+
       emit("round-started", {
-        itemId: roomQuery.data?.currentItemId || 0,
-        itemName: itemsQuery.data?.[itemsQuery.data.length - 1]?.name || "",
-        description: itemsQuery.data?.[itemsQuery.data.length - 1]?.description || "",
-        startingPrice: itemsQuery.data?.[itemsQuery.data.length - 1]?.startingPrice || "0",
-        timerDuration: parseInt(timerDuration),
+        itemId: variables.itemId,
+        itemName: startedItem?.name || "",
+        description: startedItem?.description || "",
+        startingPrice: startedItem?.startingPrice || "0",
+        timerDuration: parseInt(variables.timerDuration),
         endTime: result.endTime,
       });
     },
@@ -85,9 +93,13 @@ export default function HostDashboard() {
     onSuccess: (result) => {
       toast.success("🏁 Round ended!");
       setActiveRound(false);
+      setCurrentItemId(null);
+      setTimeLeft(0);
       setBids([]);
+      roomQuery.refetch();
+      itemsQuery.refetch();
       emit("round-ended", {
-        itemId: roomQuery.data?.currentItemId || 0,
+        itemId: roomQuery.data?.currentItemId || currentItemId || 0,
         winnerId: result.winnerId,
         winnerName: result.winnerName,
         winningBidAmount: result.winningBidAmount,
@@ -123,6 +135,7 @@ export default function HostDashboard() {
     }
 
     const lastItem = itemsQuery.data[itemsQuery.data.length - 1];
+    setCurrentItemId(lastItem.id);
     startRoundMutation.mutate({
       roomId: roomQuery.data?.id || 0,
       itemId: lastItem.id,
@@ -131,9 +144,15 @@ export default function HostDashboard() {
   };
 
   const handleEndRound = () => {
+    const itemId = roomQuery.data?.currentItemId ?? currentItemId;
+    if (!itemId) {
+      toast.error("No active round to end");
+      return;
+    }
+
     endRoundMutation.mutate({
       roomId: roomQuery.data?.id || 0,
-      itemId: roomQuery.data?.currentItemId || 0,
+      itemId,
     });
   };
 
@@ -148,7 +167,40 @@ export default function HostDashboard() {
         },
       ]);
     });
-  }, [on]);
+
+    on("participant-joined", (data: any) => {
+      participantsQuery.refetch();
+      toast.success(`${data.participantName} joined the room!`);
+    });
+  }, [on, participantsQuery]);
+
+  useEffect(() => {
+    if (!roomQuery.data) return;
+
+    setActiveRound(roomQuery.data.currentRoundActive);
+    setCurrentItemId(roomQuery.data.currentItemId);
+
+    if (roomQuery.data.currentRoundActive && roomQuery.data.currentRoundEndTime) {
+      const endTime = new Date(roomQuery.data.currentRoundEndTime).getTime();
+      setTimeLeft(Math.max(0, Math.ceil((endTime - Date.now()) / 1000)));
+    }
+  }, [roomQuery.data]);
+
+  useEffect(() => {
+    if (!activeRound || timeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [activeRound, timeLeft]);
+
+  useEffect(() => {
+    if (activeRound && timeLeft === 0 && !endRoundMutation.isPending) {
+      handleEndRound();
+    }
+  }, [activeRound, timeLeft, endRoundMutation.isPending]);
 
   if (!roomQuery.data) {
     return (
@@ -186,6 +238,13 @@ export default function HostDashboard() {
               </p>
               <p className="text-2xl font-bold text-purple-600">{participantsQuery.data?.length || 0}</p>
             </div>
+            <button
+              onClick={() => setLocation(`/host/live/${roomId}`)}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-white/90 px-5 py-4 text-base font-bold text-gray-800 shadow-lg border border-gray-200 hover:bg-gray-100 transition"
+            >
+              <Eye className="w-5 h-5 text-orange-600" />
+              Open Live View
+            </button>
           </div>
         </div>
 
@@ -310,6 +369,16 @@ export default function HostDashboard() {
                     <option value="60">🚀 60 seconds</option>
                   </select>
                 </div>
+
+                {activeRound && (
+                  <div className="p-4 bg-blue-100 border-2 border-blue-300 rounded-2xl">
+                    <p className="text-sm text-blue-700 font-bold">⏳ Remaining Time</p>
+                    <p className="text-4xl font-bold text-blue-800 font-mono mt-2">{timeLeft}s</p>
+                    {currentItemId && (
+                      <p className="text-sm text-blue-700 mt-2">Item ID: {currentItemId}</p>
+                    )}
+                  </div>
+                )}
 
                 {/* Start/End Round Button */}
                 {!activeRound ? (

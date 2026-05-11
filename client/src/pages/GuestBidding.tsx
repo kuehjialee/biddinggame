@@ -26,7 +26,7 @@ export default function GuestBidding() {
   const roomId = params?.roomId;
   const participantId = params?.participantId ? parseInt(params.participantId) : 0;
 
-  const [bidAmount, setBidAmount] = useState("");
+  const [nextBid, setNextBid] = useState("");
   const [timeLeft, setTimeLeft] = useState(0);
   const [currentRound, setCurrentRound] = useState<CurrentRound | null>(null);
   const [bids, setBids] = useState<Array<{ participantName: string; bidAmount: string }>>([]);
@@ -55,7 +55,6 @@ export default function GuestBidding() {
   const placeBidMutation = trpc.bid.place.useMutation({
     onSuccess: (bid) => {
       toast.success("🎯 Bid placed!");
-      setBidAmount("");
       emit("bid-placed", {
         participantId,
         participantName: participantQuery.data?.guestName || "Guest",
@@ -69,8 +68,8 @@ export default function GuestBidding() {
   });
 
   const handlePlaceBid = () => {
-    if (!bidAmount.trim()) {
-      toast.error("Please enter a bid amount");
+    if (!nextBid.trim()) {
+      toast.error("Please increase the price before bidding");
       return;
     }
 
@@ -82,8 +81,13 @@ export default function GuestBidding() {
     placeBidMutation.mutate({
       itemId: currentRound.itemId,
       participantId,
-      bidAmount,
+      bidAmount: nextBid,
     });
+  };
+
+  const handleIncreaseBid = () => {
+    const currentValue = nextBid ? parseFloat(nextBid) : parseFloat(currentRound?.startingPrice ?? "0") + 1;
+    setNextBid((currentValue + 1).toFixed(2));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -100,6 +104,7 @@ export default function GuestBidding() {
       setBids([]);
       setShowWinner(false);
       setWinner(null);
+      setNextBid((parseFloat(data.startingPrice) + 1).toFixed(2));
     });
   }, [on]);
 
@@ -113,6 +118,7 @@ export default function GuestBidding() {
           bidAmount: data.bidAmount,
         },
       ]);
+      setNextBid((parseFloat(data.bidAmount) + 1).toFixed(2));
     });
   }, [on]);
 
@@ -122,6 +128,8 @@ export default function GuestBidding() {
       setWinner(data);
       setShowWinner(true);
       setCurrentRound(null);
+      setNextBid("");
+      setTimeLeft(0);
     });
   }, [on]);
 
@@ -141,6 +149,16 @@ export default function GuestBidding() {
 
     return () => clearInterval(interval);
   }, [currentRound, timeLeft]);
+
+  useEffect(() => {
+    if (participantQuery.data) {
+      emit("participant-joined", {
+        participantId,
+        participantName: participantQuery.data.guestName,
+        totalParticipants: 0,
+      });
+    }
+  }, [participantQuery.data, emit, participantId]);
 
   if (!roomQuery.data || !participantQuery.data) {
     return (
@@ -225,20 +243,28 @@ export default function GuestBidding() {
               {/* Bid Input */}
               <div className="card-elevated p-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
                 <h3 className="text-2xl font-bold mb-4 text-gray-900">💎 Place Your Bid</h3>
-                <div className="flex gap-3">
-                  <input
-                    type="number"
-                    placeholder="Enter bid amount"
-                    value={bidAmount}
-                    onChange={(e) => setBidAmount(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    step="0.01"
-                    className="input-elegant flex-1"
-                  />
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="text"
+                      readOnly
+                      value={nextBid}
+                      placeholder={currentRound ? "Press +1 to increase bid" : "Waiting for round..."}
+                      className="input-elegant flex-1 bg-white/80"
+                    />
+                    <button
+                      onClick={handleIncreaseBid}
+                      disabled={!currentRound || timeLeft === 0}
+                      className="button-secondary px-6 py-3"
+                    >
+                      +1
+                    </button>
+                  </div>
+
                   <button
                     onClick={handlePlaceBid}
-                    disabled={placeBidMutation.isPending || timeLeft === 0}
-                    className="button-accent px-6 py-3"
+                    disabled={placeBidMutation.isPending || timeLeft === 0 || !nextBid}
+                    className="button-accent w-full py-4 text-lg"
                   >
                     {placeBidMutation.isPending ? (
                       <>

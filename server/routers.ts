@@ -14,6 +14,7 @@ import {
   getBidsByItemId,
   getHighestBidForItem,
   addParticipant,
+  getParticipantByRoomIdAndName,
   getParticipantsByRoomId,
   getParticipantById,
   updateRoundState,
@@ -166,14 +167,23 @@ export const appRouter = router({
           });
         }
 
-        // Check if bid is higher than current highest bid
+        // Check if bid is exactly one increment above current highest bid
         const highestBid = await getHighestBidForItem(input.itemId);
         if (highestBid) {
           const highestAmount = parseFloat(highestBid.bidAmount);
-          if (bidAmount <= highestAmount) {
+          const expectedAmount = parseFloat((highestAmount + 1).toFixed(2));
+          if (bidAmount !== expectedAmount) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: `Bid must be higher than the current highest bid (${highestBid.bidAmount})`,
+              message: `Bid must be exactly ${expectedAmount.toFixed(2)} (one increment above the current highest bid)`,
+            });
+          }
+        } else {
+          const expectedStart = parseFloat((startingPrice + 1).toFixed(2));
+          if (bidAmount !== expectedStart) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `First bid must be exactly ${expectedStart.toFixed(2)} (starting price + 1)`,
             });
           }
         }
@@ -227,8 +237,14 @@ export const appRouter = router({
           throw new TRPCError({ code: "NOT_FOUND", message: "Room not found" });
         }
 
+        // Prevent duplicate names in the same room
+        const existingParticipant = await getParticipantByRoomIdAndName(input.roomId, input.guestName.trim());
+        if (existingParticipant) {
+          throw new TRPCError({ code: "CONFLICT", message: "This name is already taken in the room" });
+        }
+
         // Add participant
-        const participant = await addParticipant(input.roomId, input.guestName);
+        const participant = await addParticipant(input.roomId, input.guestName.trim());
         if (!participant) {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to join room" });
         }

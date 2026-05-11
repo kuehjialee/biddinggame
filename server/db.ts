@@ -333,3 +333,16 @@ export async function getParticipantById(id: number): Promise<Participant | null
   const result = await db.select().from(participants).where(eq(participants.id, id)).limit(1);
   return result.length > 0 ? result[0] : null;
 }
+
+export async function getParticipantByRoomIdAndName(roomId: number, guestName: string): Promise<Participant | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db
+    .select()
+    .from(participants)
+    .where(and(eq(participants.roomId, roomId), eq(participants.guestName, guestName)))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
+}

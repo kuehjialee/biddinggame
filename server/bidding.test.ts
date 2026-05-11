@@ -14,6 +14,7 @@ vi.mock("./db", () => ({
   getBidsByItemId: vi.fn(),
   getHighestBidForItem: vi.fn(),
   addParticipant: vi.fn(),
+  getParticipantByRoomIdAndName: vi.fn(),
   getParticipantsByRoomId: vi.fn(),
   getParticipantById: vi.fn(),
   updateRoundState: vi.fn(),
@@ -179,7 +180,7 @@ describe("Bidding System - tRPC Procedures", () => {
   });
 
   describe("bid.place", () => {
-    it("should place a valid bid", async () => {
+    it("should place a valid first bid at starting price + 1", async () => {
       const mockItem = {
         id: 1,
         roomId: 1,
@@ -197,7 +198,7 @@ describe("Bidding System - tRPC Procedures", () => {
         id: 1,
         itemId: 1,
         participantId: 1,
-        bidAmount: "150.00",
+        bidAmount: "101.00",
         createdAt: new Date(),
       };
 
@@ -209,11 +210,11 @@ describe("Bidding System - tRPC Procedures", () => {
       const result = await caller.bid.place({
         itemId: 1,
         participantId: 1,
-        bidAmount: "150.00",
+        bidAmount: "101.00",
       });
 
       expect(result).toEqual(mockBid);
-      expect(db.createBid).toHaveBeenCalledWith(1, 1, "150.00");
+      expect(db.createBid).toHaveBeenCalledWith(1, 1, "101.00");
     });
 
     it("should reject bid lower than starting price", async () => {
@@ -243,7 +244,7 @@ describe("Bidding System - tRPC Procedures", () => {
       ).rejects.toThrow("Bid must be at least 100.00");
     });
 
-    it("should reject bid not higher than current highest", async () => {
+    it("should reject a bid that is not exactly one increment above the current highest", async () => {
       const mockItem = {
         id: 1,
         roomId: 1,
@@ -274,11 +275,66 @@ describe("Bidding System - tRPC Procedures", () => {
         caller.bid.place({
           itemId: 1,
           participantId: 2,
-          bidAmount: "150.00",
+          bidAmount: "202.00",
         })
       ).rejects.toThrow(
-        "Bid must be higher than the current highest bid (200.00)"
+        "Bid must be exactly 201.00 (one increment above the current highest bid)"
       );
+    });
+
+    it("should reject bid not lower than starting price", async () => {
+      const mockItem = {
+        id: 1,
+        roomId: 1,
+        name: "Watch",
+        description: null,
+        startingPrice: "100.00",
+        status: "active" as const,
+        winnerId: null,
+        winningBidAmount: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      vi.mocked(db.getItemById).mockResolvedValue(mockItem);
+
+      const caller = appRouter.createCaller(createMockContext());
+
+      await expect(
+        caller.bid.place({
+          itemId: 1,
+          participantId: 1,
+          bidAmount: "50.00",
+        })
+      ).rejects.toThrow("Bid must be at least 100.00");
+    });
+
+    it("should reject first bid that is not starting price + 1", async () => {
+      const mockItem = {
+        id: 1,
+        roomId: 1,
+        name: "Watch",
+        description: null,
+        startingPrice: "100.00",
+        status: "active" as const,
+        winnerId: null,
+        winningBidAmount: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      vi.mocked(db.getItemById).mockResolvedValue(mockItem);
+      vi.mocked(db.getHighestBidForItem).mockResolvedValue(null);
+
+      const caller = appRouter.createCaller(createMockContext());
+
+      await expect(
+        caller.bid.place({
+          itemId: 1,
+          participantId: 1,
+          bidAmount: "100.00",
+        })
+      ).rejects.toThrow("First bid must be exactly 101.00 (starting price + 1)");
     });
 
     it("should reject bid on inactive item", async () => {
@@ -332,6 +388,7 @@ describe("Bidding System - tRPC Procedures", () => {
       };
 
       vi.mocked(db.getRoomById).mockResolvedValue(mockRoom);
+      vi.mocked(db.getParticipantByRoomIdAndName).mockResolvedValue(null);
       vi.mocked(db.addParticipant).mockResolvedValue(mockParticipant);
 
       const caller = appRouter.createCaller(createMockContext());
@@ -341,7 +398,42 @@ describe("Bidding System - tRPC Procedures", () => {
       });
 
       expect(result).toEqual(mockParticipant);
+      expect(db.getParticipantByRoomIdAndName).toHaveBeenCalledWith(1, "John Doe");
       expect(db.addParticipant).toHaveBeenCalledWith(1, "John Doe");
+    });
+
+    it("should reject duplicate guest names in the same room", async () => {
+      const mockRoom = {
+        id: 1,
+        roomId: "ABC12345",
+        hostUserId: 1,
+        status: "waiting" as const,
+        currentItemId: null,
+        currentRoundActive: false,
+        currentRoundEndTime: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const existingParticipant = {
+        id: 1,
+        roomId: 1,
+        guestName: "John Doe",
+        joinedAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      vi.mocked(db.getRoomById).mockResolvedValue(mockRoom);
+      vi.mocked(db.getParticipantByRoomIdAndName).mockResolvedValue(existingParticipant);
+
+      const caller = appRouter.createCaller(createMockContext());
+
+      await expect(
+        caller.participant.join({
+          roomId: 1,
+          guestName: "John Doe",
+        })
+      ).rejects.toThrow("This name is already taken in the room");
     });
 
     it("should reject join with empty guest name", async () => {
